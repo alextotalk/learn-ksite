@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { Lesson, CATEGORIES } from "@/data/courses";
+import { CommentsSection } from "@/components/CommentsSection";
+
 
 interface LessonModalProps {
   lesson: Lesson;
@@ -152,7 +154,11 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           </div>
         )}
 
+        {/* Comments & Discussion Section */}
+        <CommentsSection lessonId={lesson.id} />
+
         {/* Modal Footer Actions & Sequential Navigation */}
+
         <div className="modal-footer">
           <button
             className={`btn ${isCompleted ? "btn-secondary" : "btn-primary"}`}
