@@ -5,10 +5,11 @@ import { Navbar } from "@/components/Navbar";
 import { LessonCard } from "@/components/LessonCard";
 import { LessonModal } from "@/components/LessonModal";
 import { AddLessonModal } from "@/components/AddLessonModal";
-import { INITIAL_LESSONS, Lesson, CATEGORIES } from "@/data/courses";
+import { INITIAL_LESSONS, Lesson, CATEGORIES, TOPIC_GROUPS } from "@/data/courses";
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");
+  const [activeTopicGroup, setActiveTopicGroup] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [lessons, setLessons] = useState<Lesson[]>(INITIAL_LESSONS);
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>([]);
@@ -23,9 +24,9 @@ export default function HomePage() {
         setCompletedLessonIds(JSON.parse(savedCompleted));
       }
 
-      const savedCustomLessons = localStorage.getItem("ksite_custom_lessons");
-      if (savedCustomLessons) {
-        const parsedCustom: Lesson[] = JSON.parse(savedCustomLessons);
+      const savedCustom = localStorage.getItem("ksite_custom_lessons");
+      if (savedCustom) {
+        const parsedCustom: Lesson[] = JSON.parse(savedCustom);
         setLessons([...INITIAL_LESSONS, ...parsedCustom]);
       }
     } catch (e) {
@@ -51,23 +52,27 @@ export default function HomePage() {
     const updatedLessons = [newLesson, ...lessons];
     setLessons(updatedLessons);
 
-    // Save custom lessons to localStorage
     const customOnly = updatedLessons.filter(
       (l) => !INITIAL_LESSONS.some((init) => init.id === l.id)
     );
     localStorage.setItem("ksite_custom_lessons", JSON.stringify(customOnly));
   };
 
-  // Filter lessons based on category & search query
-  const filteredLessons = lessons.filter((lesson) => {
-    const matchesCategory =
-      activeCategory === "all" || lesson.category === activeCategory;
-    const matchesSearch =
-      lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lesson.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lesson.content.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  // Filter and sort lessons
+  const filteredLessons = lessons
+    .filter((lesson) => {
+      const matchesCategory =
+        activeCategory === "all" || lesson.category === activeCategory;
+      const matchesTopicGroup =
+        activeTopicGroup === "all" || lesson.topicGroup === activeTopicGroup;
+      const matchesSearch =
+        lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lesson.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lesson.content.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchesCategory && matchesTopicGroup && matchesSearch;
+    })
+    .sort((a, b) => a.order - b.order);
 
   const completedCount = completedLessonIds.length;
   const progressPercent = Math.round((completedCount / lessons.length) * 100) || 0;
@@ -94,13 +99,13 @@ export default function HomePage() {
         {/* Hero Section */}
         <section className="hero-section glass-panel">
           <div className="hero-badge">
-            <span>🚀 Навчальна База Знань</span>
+            <span>🚀 Інтерактивна База Знань</span>
           </div>
           <h1 className="hero-title">
-            Вивчайте <span className="gradient-text">Мови Програмування</span> та Розробку
+            Структуровані <span className="gradient-text">Курси та Уроки</span> з Програмування
           </h1>
           <p className="hero-subtitle">
-            Інтерактивні уроки, практичні приклади коду та статті з JavaScript/TS, PHP, Go, Python, PostgreSQL та архітектури.
+            Покроковий шлях від вступних концепцій до типів даних, ООП та роботи з Postgres для JS/TS, PHP, Go та Python.
           </p>
 
           {/* Progress Tracker */}
@@ -115,11 +120,31 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Topic Module Filter Bar */}
+        <div className="topic-filter-bar">
+          <span className="filter-label">🎯 Модуль матеріалу:</span>
+          <button
+            className={`topic-btn ${activeTopicGroup === "all" ? "active" : ""}`}
+            onClick={() => setActiveTopicGroup("all")}
+          >
+            Всі модулі
+          </button>
+          {TOPIC_GROUPS.map((tg) => (
+            <button
+              key={tg}
+              className={`topic-btn ${activeTopicGroup === tg ? "active" : ""}`}
+              onClick={() => setActiveTopicGroup(tg)}
+            >
+              {tg}
+            </button>
+          ))}
+        </div>
+
         {/* Section Header */}
         <div className="section-bar">
           <h2 className="section-title">
             {activeCategory === "all" ? (
-              <>🔥 Всі уроки та статті ({filteredLessons.length})</>
+              <>🔥 Всі матеріали ({filteredLessons.length})</>
             ) : (
               <>
                 {CATEGORIES.find((c) => c.id === activeCategory)?.icon}{" "}
@@ -151,10 +176,10 @@ export default function HomePage() {
         ) : (
           <div className="empty-state glass-panel">
             <div className="empty-icon">🔍</div>
-            <h3>Уроків за цим запитом не знайдено</h3>
-            <p>Спробуйте змінити пошуковий запит або додати власний новий урок!</p>
+            <h3>Уроків у даному розділі не знайдено</h3>
+            <p>Спробуйте обрати інший модуль або додайте власний новий урок!</p>
             <button className="btn btn-primary" onClick={() => setIsAddModalOpen(true)}>
-              + Додати урок
+              + Додати новий урок
             </button>
           </div>
         )}
@@ -164,9 +189,11 @@ export default function HomePage() {
       {selectedLesson && (
         <LessonModal
           lesson={selectedLesson}
+          allLessons={lessons}
           isCompleted={completedLessonIds.includes(selectedLesson.id)}
           onClose={() => setSelectedLesson(null)}
           onToggleComplete={(id) => handleToggleComplete(id)}
+          onSelectLesson={setSelectedLesson}
         />
       )}
 
@@ -269,11 +296,51 @@ export default function HomePage() {
           transition: width 0.4s ease;
         }
 
+        .topic-filter-bar {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          flex-wrap: wrap;
+          background: rgba(18, 24, 36, 0.6);
+          padding: 0.75rem 1.25rem;
+          border-radius: var(--radius-md);
+          border: 1px solid var(--border-color);
+        }
+
+        .filter-label {
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: var(--text-muted);
+          margin-right: 0.5rem;
+        }
+
+        .topic-btn {
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          color: var(--text-secondary);
+          padding: 0.35rem 0.8rem;
+          border-radius: var(--radius-md);
+          font-size: 0.82rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .topic-btn:hover {
+          background: rgba(255, 255, 255, 0.08);
+          color: var(--text-primary);
+        }
+
+        .topic-btn.active {
+          background: var(--accent-secondary);
+          color: #ffffff;
+          border-color: var(--accent-secondary);
+        }
+
         .section-bar {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-top: 1rem;
         }
 
         .section-title {

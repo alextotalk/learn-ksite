@@ -1,8 +1,14 @@
+export type CategoryId = "js" | "php" | "go" | "python" | "postgresql" | "article";
+
+export type TopicGroup = "Вступ" | "Типи даних" | "Функції & ООП" | "Бази даних" | "Практика";
+
 export interface Lesson {
   id: string;
   slug: string;
+  order: number;
+  category: CategoryId;
+  topicGroup: TopicGroup;
   title: string;
-  category: "js" | "php" | "go" | "python" | "postgresql" | "article";
   level: "Початковий" | "Середній" | "Просунутий";
   duration: string;
   summary: string;
@@ -20,7 +26,7 @@ export interface Lesson {
 }
 
 export interface Category {
-  id: "js" | "php" | "go" | "python" | "postgresql" | "article";
+  id: CategoryId;
   name: string;
   icon: string;
   color: string;
@@ -79,16 +85,27 @@ export const CATEGORIES: Category[] = [
   }
 ];
 
+export const TOPIC_GROUPS: TopicGroup[] = [
+  "Вступ",
+  "Типи даних",
+  "Функції & ООП",
+  "Бази даних",
+  "Практика"
+];
+
 export const INITIAL_LESSONS: Lesson[] = [
+  // ===================== JAVASCRIPT / TYPESCRIPT =====================
   {
     id: "js-lesson-1",
-    slug: "vstup-do-javascript-ts",
+    order: 1,
     category: "js",
-    title: "Урок 1: Вступ до сучасного JavaScript & TypeScript",
+    topicGroup: "Вступ",
+    slug: "vstup-do-javascript-ts",
+    title: "JS / TS №1: Вступ до сучасного JavaScript & TypeScript",
     level: "Початковий",
     duration: "15 хв",
-    summary: "Основи сучасного синтаксису ES6+, змінні (const/let), стрілкові функції та чому TypeScript став стандартом індустрії.",
-    content: `JavaScript є основною мовою веб-розробки. З появою стандарта ES6 (2015) та TypeScript розробка стала набагато безпечнішою та структурованою.
+    summary: "Основи сучасного синтаксису ES6+, змінні (const/let), стрілкові функції та переваги TypeScript.",
+    content: `JavaScript є основною мовою веб-розробки. З появою стандарта ES6 та TypeScript розробка стала набагато безпечнішою та структурованою.
 
 ### Основні концепції:
 1. **Змінні**: Забудьте про \`var\`. Використовуйте \`const\` за замовчуванням та \`let\`, якщо значення змінюється.
@@ -96,20 +113,17 @@ export const INITIAL_LESSONS: Lesson[] = [
 3. **Строга типізація TypeScript**: Запобігає помилкам під час написання коду замість виконання у продакшні.`,
     codeExample: {
       language: "typescript",
-      code: `// Приклад сучасного TypeScript
-interface Developer {
+      code: `interface Developer {
   id: number;
   name: string;
   skills: string[];
 }
 
-const createDeveloper = (name: string, skills: string[]): Developer => {
-  return {
-    id: Date.now(),
-    name,
-    skills,
-  };
-};
+const createDeveloper = (name: string, skills: string[]): Developer => ({
+  id: Date.now(),
+  name,
+  skills,
+});
 
 const dev = createDeveloper("Олексій", ["React", "TypeScript", "Node.js"]);
 console.log(\`Розробник \${dev.name} володіє: \${dev.skills.join(", ")}\`);`
@@ -122,20 +136,85 @@ console.log(\`Розробник \${dev.name} володіє: \${dev.skills.join
     }
   },
   {
+    id: "js-lesson-2",
+    order: 2,
+    category: "js",
+    topicGroup: "Типи даних",
+    slug: "typy-danykh-v-js-ts",
+    title: "JS / TS №2: Типи даних (Primitive vs Reference) та TypeScript Types",
+    level: "Початковий",
+    duration: "20 хв",
+    summary: "Примітивні типи (number, string, boolean, null, undefined, symbol, bigint) та посилальні типи (Object, Array, Function). Оголошення interface та type.",
+    content: `У JavaScript існує 8 основних типів даних, які поділяються на примітивні (передаються за значенням) та посилальні (передаються за посиланням в пам'яті).
+
+### 1. Примітивні типи (Primitives):
+* \`number\` — числа (цілі та з рухомою крапкою)
+* \`string\` — текстові рядки
+* \`boolean\` — \`true\` або \`false\`
+* \`undefined\` — значення за замовчуванням для неініціалізованих змінних
+* \`null\` — явна відсутність значення
+* \`bigint\` — для дуже великих цілих чисел
+* \`symbol\` — унікальні ідентифікатори
+
+### 2. Посилальні типи (Reference Types):
+Об'єкти, масиви та функції зберігаються в пам'яті (Heap), а змінна тримає лише посилання на них.
+
+### 3. Типізація у TypeScript:
+TypeScript дозволяє явно описувати форми об'єктів за допомогою \`interface\` або \`type\`.`,
+    codeExample: {
+      language: "typescript",
+      code: `// Примітивні типи
+const count: number = 42;
+const title: string = "TypeScript Data Types";
+const isActive: boolean = true;
+
+// Custom Types & Interfaces
+type UserRole = "admin" | "user" | "guest"; // Union Type
+
+interface UserProfile {
+  readonly id: number;
+  name: string;
+  role: UserRole;
+  tags?: string[]; // Опціональне поле
+}
+
+const user: UserProfile = {
+  id: 101,
+  name: "Анна",
+  role: "admin",
+};`
+    },
+    quiz: {
+      question: "Яка головна відмінність між примітивними та посилальними типами даних у JS?",
+      options: [
+        "Примітиви передаються за значенням, а посилальні (об'єкти) — за посиланням у пам'яті",
+        "Примітиви не можуть містити числа",
+        "Посилальні типи автоматично видаляються з коду",
+        "Відмінностей немає"
+      ],
+      answerIndex: 0,
+      explanation: "При присвоєнні об'єкта іншій змінній копіюється лише посилання на адресу в пам'яті, а не сам об'єкт."
+    }
+  },
+
+  // ===================== PHP =====================
+  {
     id: "php-lesson-1",
-    slug: "vstup-do-php-8",
+    order: 1,
     category: "php",
-    title: "Урок 1: Вступ до сучасного PHP 8+",
+    topicGroup: "Вступ",
+    slug: "vstup-do-php-8",
+    title: "PHP №1: Вступ до сучасного PHP 8+",
     level: "Початковий",
     duration: "15 хв",
     summary: "Сучасний PHP 8 — це швидка мова із суворою типізацією, JIT-компілятором та потужним ООП.",
-    content: `Забудьте стереотипи про старий PHP 5. Сучасний **PHP 8.2+** — це одна з найпопулярніших та найефективніших мов для веб-бекаенду.
+    content: `Забудьте стереотипи про старий PHP. Сучасний **PHP 8.2+** — це одна з найпопулярніших та найефективніших мов для веб-бекенду.
 
 ### Чому PHP 8 потужний:
 * **Строга типізація** параметрів та повертаємих значень.
 * **Promoted Properties** у конструкторах для зменшення boilerplate-коду.
 * **Match Expression** замість застарілого switch.
-* **Attributes (Анотації)** для конфігурації роутів та моделей.`,
+* **Attributes** для конфігурації моделей та маршрутів.`,
     codeExample: {
       language: "php",
       code: `<?php
@@ -166,10 +245,69 @@ echo "Створено користувача: {$user->email} з роллю: {$u
     }
   },
   {
+    id: "php-lesson-2",
+    order: 2,
+    category: "php",
+    topicGroup: "Типи даних",
+    slug: "typy-danykh-v-php",
+    title: "PHP №2: Типи даних у PHP 8, Scalar, Compound та Special Types",
+    level: "Початковий",
+    duration: "18 хв",
+    summary: "Скалярні типи (int, float, string, bool), складені (array, object, callable), спеціальні (null, resource) та Union/Intersection types.",
+    content: `У PHP 8 система типів є надзвичайно гнучкою. Мова підтримує як динамічне приведення типів, так і строго типізований режим.
+
+### Скалярні типи (Scalar Types):
+* \`int\` — цілі числа (\`42\`, \`-100\`)
+* \`float\` — числа з плаваючою крапкою (\`3.14\`)
+* \`string\` — тексті рядки (\`"Hello World"\`)
+* \`bool\` — логічний тип (\`true\`, \`false\`)
+
+### Складені типи (Compound Types):
+* \`array\` — універсальний асоціативний масив та список.
+* \`object\` — екземпляри класів.
+* \`callable\` — функції чи методи, які можна викликати.
+
+### Union Types у PHP 8:
+PHP 8 підтримує об'єднання типів (наприклад \`int|string\`), що дозволяє явно вказувати декілька допустимих типів.`,
+    codeExample: {
+      language: "php",
+      code: `<?php
+
+declare(strict_types=1);
+
+// Використання Union Types (int|float) та nullable типів (?string)
+function calculateDiscount(int|float $price, float $percent): float {
+    return $price - ($price * ($percent / 100));
+}
+
+$originalPrice = 1500; // int
+$discounted = calculateDiscount($originalPrice, 15.5);
+
+// Асоціативний масив (Array)
+$product = [
+    "title" => "MacBook Pro",
+    "price" => $discounted,
+    "in_stock" => true,
+];
+
+var_dump($product);`
+    },
+    quiz: {
+      question: "Який тип даних у PHP є універсальним і використовується і як звичайний список, і як асоціативний словник?",
+      options: ["List", "Dictionary", "array", "Collection"],
+      answerIndex: 2,
+      explanation: "У PHP тип array поєднує в собі функціонал впорядкованих списків та хеш-таблиць (асоціативних масивів)."
+    }
+  },
+
+  // ===================== GO (GOLANG) =====================
+  {
     id: "go-lesson-1",
-    slug: "vstup-do-golang",
+    order: 1,
     category: "go",
-    title: "Урок 1: Вступ до Go (Golang)",
+    topicGroup: "Вступ",
+    slug: "vstup-do-golang",
+    title: "Go №1: Вступ до Go (Golang)",
     level: "Початковий",
     duration: "20 хв",
     summary: "Простота, швидкодія та вбудована конкурентність за допомогою Goroutines.",
@@ -178,7 +316,7 @@ echo "Створено користувача: {$user->email} з роллю: {$u
 ### Ключові особливості Go:
 1. **Простий синтаксис**: Всього 25 ключових слів (просто засвоїти).
 2. **Швидка компіляція**: Компілюється безпосередньо у бінарний файл під цільову ОС.
-3. **Goroutines**: Легковагі потоки, які споживають лише кілька кілобайт оперативної пам'яті.`,
+3. **Goroutines**: Легковагі потоки, які споживають лише кілька кілобайт пам'яті.`,
     codeExample: {
       language: "go",
       code: `package main
@@ -193,9 +331,7 @@ func sayHello(name string) {
 }
 
 func main() {
-	// Запуск у паралельному легковагому потоці
 	go sayHello("Go Developer")
-	
 	fmt.Println("Головний потік виконується...")
 	time.Sleep(100 * time.Millisecond)
 }`
@@ -213,10 +349,78 @@ func main() {
     }
   },
   {
+    id: "go-lesson-2",
+    order: 2,
+    category: "go",
+    topicGroup: "Типи даних",
+    slug: "typy-danykh-v-go",
+    title: "Go №2: Типи даних у Go, Zero Values, Slices, Maps та Structs",
+    level: "Початковий",
+    duration: "22 хв",
+    summary: "Статична типізація Go: int, float64, string, bool, масиви, динамічні Slices, хеш-карти Maps та структури Structs.",
+    content: `Go — це строго типізована мова зі статичною перевіркою типів. Кожен тип має своє "нульове значення" (Zero Value) за замовчуванням.
+
+### 1. Базові типи та Zero Values:
+* \`int\` / \`int64\` (нульове значення: \`0\`)
+* \`float64\` (нульове значення: \`0.0\`)
+* \`string\` (нульове значення: \`""\`)
+* \`bool\` (нульове значення: \`false\`)
+
+### 2. Слайси (Slices):
+Динамічна обгортка над масивами, яка може автоматично змінювати розмір при додаванні елементів через \`append()\`.
+
+### 3. Структури (Structs) та Карти (Maps):
+Структури описують власні типи даних, а \`map[K]V\` зберігає пари ключ-значення.`,
+    codeExample: {
+      language: "go",
+      code: `package main
+
+import "fmt"
+
+// Оголошення структури
+type ServerConfig struct {
+	Host string
+	Port int
+	SSL  bool
+}
+
+func main() {
+	// Slices (динамічний масив)
+	ports := []int{8080, 9090, 3000}
+	ports = append(ports, 5000)
+
+	// Map (хеш-карта)
+	statusCodes := map[string]int{
+		"OK":       200,
+		"NotFound": 404,
+	}
+
+	// Struct
+	config := ServerConfig{
+		Host: "localhost",
+		Port: statusCodes["OK"],
+		SSL:  true,
+	}
+
+	fmt.Printf("Конфігурація сервера: %+v\nСлайс портів: %v\n", config, ports)
+}`
+    },
+    quiz: {
+      question: "Яке 'нульове значення' (Zero Value) має змінна типу int у мові Go при її оголошенні без ініціалізації?",
+      options: ["nil", "null", "0", "undefined"],
+      answerIndex: 2,
+      explanation: "У Go неініціалізована цілочисельна змінна за замовчуванням завжди дорівнює 0."
+    }
+  },
+
+  // ===================== PYTHON =====================
+  {
     id: "python-lesson-1",
-    slug: "vstup-do-python",
+    order: 1,
     category: "python",
-    title: "Урок 1: Вступ до Python та основи синтаксису",
+    topicGroup: "Вступ",
+    slug: "vstup-do-python",
+    title: "Python №1: Вступ до Python та основи синтаксису",
     level: "Початковий",
     duration: "12 хв",
     summary: "Чистий синтаксис, висока читабельність коду та багата екосистема бібліотек.",
@@ -250,10 +454,67 @@ print("Активні розробники:", get_active_users(users_db))`
     }
   },
   {
+    id: "python-lesson-2",
+    order: 2,
+    category: "python",
+    topicGroup: "Типи даних",
+    slug: "typy-danykh-v-python",
+    title: "Python №2: Змінювані та Незмінювані типи (Mutable vs Immutable)",
+    level: "Початковий",
+    duration: "16 хв",
+    summary: "Незмінювані типи (int, float, str, tuple) проти змінюваних типів (list, dict, set). Особливості роботи з пам'яттю.",
+    content: `У Python всі типи даних є об'єктами. Фундаментальний поділ типів у Python — це поділ на **Mutable** (змінювані) та **Immutable** (незмінювані).
+
+### 1. Незмінювані типи (Immutable):
+Після створення об'єкта його значення в пам'яті не можна змінити:
+* \`int\`, \`float\`, \`bool\`
+* \`str\` (рядки)
+* \`tuple\` (кортежі)
+
+### 2. Змінювані типи (Mutable):
+Об'єкти можна модифікувати без зміни їхньої адреси у пам'яті:
+* \`list\` (списки)
+* \`dict\` (словники)
+* \`set\` (множини)
+
+### Чому це важливо:
+Незмінювані типи (наприклад, \`tuple\` або \`str\`) можна використовувати як ключі у словниках (\`dict\`), а змінювані (\`list\`) — ні.`,
+    codeExample: {
+      language: "python",
+      code: `# Приклад Immutable (Кортеж) vs Mutable (Список)
+
+# Tuple - незмінюваний
+coordinates: tuple[float, float] = (50.4501, 30.5234)
+
+# List - змінюваний список
+skills: list[str] = ["Python", "FastAPI"]
+skills.append("PostgreSQL") # Модифікуємо список
+
+# Dict - словник (ключ-значення)
+developer_profile: dict[str, any] = {
+    "name": "Олексій",
+    "skills": skills,
+    "location": coordinates
+}
+
+print(f"Профіль: {developer_profile}")`
+    },
+    quiz: {
+      question: "Який з наведених типів даних у Python є НЕЗМІНЮВАНИМ (Immutable)?",
+      options: ["list", "dict", "tuple", "set"],
+      answerIndex: 2,
+      explanation: "tuple (кортеж) є незмінюваною послідовністю. Після створення елементи кортежу не можна додавати, видаляти або змінювати."
+    }
+  },
+
+  // ===================== POSTGRESQL =====================
+  {
     id: "postgresql-lesson-1",
-    slug: "vstup-do-postgresql",
+    order: 1,
     category: "postgresql",
-    title: "Урок 1: Вступ до PostgreSQL та основні SQL-запити",
+    topicGroup: "Вступ",
+    slug: "vstup-do-postgresql",
+    title: "PostgreSQL №1: Вступ до PostgreSQL та основні SQL-запити",
     level: "Початковий",
     duration: "18 хв",
     summary: "Реляційні бази даних, проектування схем, первинні ключі та оператори SELECT/INSERT.",
@@ -262,22 +523,19 @@ print("Активні розробники:", get_active_users(users_db))`
 ### Основні поняття:
 * **Таблиці (Tables)**: Зберігають дані у вигляді рядків та стовпчиків.
 * **Primary Key (Первинний ключ)**: Унікальний ідентифікатор кожного запису.
-* **Foreign Key (Зовнішній ключ)**: Зв'язок між таблицями (One-to-Many, Many-to-Many).`,
+* **Foreign Key (Зовнішній ключ)**: Зв'язок між таблицями.`,
     codeExample: {
       language: "sql",
-      code: `-- Створення таблиці студентів
-CREATE TABLE IF NOT EXISTS developers (
+      code: `CREATE TABLE IF NOT EXISTS developers (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     primary_language VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Вставка даних
 INSERT INTO developers (name, primary_language) 
 VALUES ('Олексій', 'TypeScript'), ('Марія', 'Python');
 
--- Вибірка даних з фільтрацією
 SELECT id, name, primary_language 
 FROM developers 
 WHERE primary_language = 'TypeScript';`
@@ -290,10 +548,72 @@ WHERE primary_language = 'TypeScript';`
     }
   },
   {
+    id: "postgresql-lesson-2",
+    order: 2,
+    category: "postgresql",
+    topicGroup: "Типи даних",
+    slug: "typy-danykh-v-postgresql",
+    title: "PostgreSQL №2: Типи даних у PostgreSQL (Integer, Text, JSONB, Array)",
+    level: "Початковий",
+    duration: "20 хв",
+    summary: "Числові типи, символьні типи, дати/час, масиви та JSONB для роботи з неструктурованими даними.",
+    content: `PostgreSQL вирізняється надзвичайно багатим набором вбудованих типів даних, включаючи вбудовану підтримку JSON/JSONB та масивів.
+
+### 1. Числові та Символьні типи:
+* \`INT\` / \`BIGINT\` — цілі числа.
+* \`NUMERIC(10, 2)\` — точні числа для фінансових розрахунків.
+* \`VARCHAR(n)\` / \`TEXT\` — текстові поля будь-якої довжини.
+
+### 2. Типи дати та часу:
+* \`TIMESTAMP WITH TIME ZONE\` (TIMESTAMPTZ) — зберігає час із врахуванням часового поясу.
+
+### 3. JSONB та Масиви (Arrays):
+* \`JSONB\` — бінарне зберігання JSON з можливістю створення індексів GIN для миттєвого пошуку.
+* \`TEXT[]\` — масиви рядків у стовпчику.`,
+    codeExample: {
+      language: "sql",
+      code: `-- Таблиця з розширеними типами даних у PostgreSQL
+CREATE TABLE user_settings (
+    user_id INT PRIMARY KEY,
+    preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
+    tags TEXT[] NOT NULL DEFAULT '{}',
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Вставка JSONB та масиву
+INSERT INTO user_settings (user_id, preferences, tags)
+VALUES (
+    1, 
+    '{"theme": "dark", "notifications": true}'::jsonb, 
+    ARRAY['developer', 'backend']
+);
+
+-- Запит до JSONB поля
+SELECT user_id, preferences->>'theme' AS theme
+FROM user_settings
+WHERE preferences @> '{"notifications": true}';`
+    },
+    quiz: {
+      question: "У чому головна перевага типу JSONB перед звичайним типом JSON у PostgreSQL?",
+      options: [
+        "JSONB підтримує індексацію GIN і обробляється швидше при запитах",
+        "JSONB не займає місця на диску",
+        "JSONB підтримує лише числа",
+        "Ніяких переваг немає"
+      ],
+      answerIndex: 0,
+      explanation: "JSONB зберігає дані у розпарсеному бінарному форматі та дозволяє будувати індекси GIN для швидкого пошуку по ключах та значеннях."
+    }
+  },
+
+  // ===================== ARTICLES =====================
+  {
     id: "article-1",
-    slug: "yak-efektyvno-vychaty-prohramuvannya",
+    order: 1,
     category: "article",
-    title: "Стаття: Як ефективно вивчати програмування та не вигоряти",
+    topicGroup: "Вступ",
+    slug: "yak-efektyvno-vychaty-prohramuvannya",
+    title: "Стаття №1: Як ефективно вивчати програмування та не вигоряти",
     level: "Початковий",
     duration: "10 хв",
     summary: "Практичні поради від досвідчених розробників: від теорії до кодингу, пет-проєкти та режим відпочинку.",
@@ -311,6 +631,30 @@ WHERE primary_language = 'TypeScript';`
       options: ["90% теорії, 10% практики", "20% теорії, 80% практики", "50% теорії, 50% практики", "Тільки теорія"],
       answerIndex: 1,
       explanation: "Практичне застосування знань дає найглибше розуміння та формує м'язову пам'ять розробника."
+    }
+  },
+  {
+    id: "article-2",
+    order: 2,
+    category: "article",
+    topicGroup: "Практика",
+    slug: "yak-vybraty-pershu-movu-prohramuvannya",
+    title: "Стаття №2: Порівняння мов програмування: JS vs PHP vs Go vs Python",
+    level: "Початковий",
+    duration: "12 хв",
+    summary: "Аналіз сфер застосування, порогу входження та вакансій для кожної з популярних мов.",
+    content: `Вибір першої або другої мови програмування залежить від ваших цілей:
+
+* **JavaScript / TypeScript**: Найкращий вибір для Frontend та Fullstack (Node.js/React/Next.js).
+* **PHP 8**: Ідеально для сучасної веб-розробки (Laravel/Symfony), легкий старт та величезний ринок проєктів.
+* **Go (Golang)**: Чудово підходить для високозавантажених серверів, мікросервісів, хмарних систем (Docker, K8s).
+* **Python**: Лідер у сфері Data Science, штучного інтелекту (AI/ML), автоматизації та швидких API (FastAPI).
+* **PostgreSQL**: Базовий навичка для кожного Backend розробника незалежно від мови.`,
+    quiz: {
+      question: "Яка мова вважається стандартом для розробки інтерфейсів (Frontend) у веб-браузерах?",
+      options: ["Python", "JavaScript", "Go", "PHP"],
+      answerIndex: 1,
+      explanation: "JavaScript (і його надбудова TypeScript) є єдиною мовою, яку підтримують усі сучасні браузери нативним чином."
     }
   }
 ];

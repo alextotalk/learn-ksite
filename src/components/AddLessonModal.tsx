@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Lesson, CATEGORIES } from "@/data/courses";
+import { Lesson, CATEGORIES, TOPIC_GROUPS, TopicGroup, CategoryId } from "@/data/courses";
 
 interface AddLessonModalProps {
   onClose: () => void;
@@ -10,7 +10,9 @@ interface AddLessonModalProps {
 
 export const AddLessonModal: React.FC<AddLessonModalProps> = ({ onClose, onAddLesson }) => {
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<Lesson["category"]>("js");
+  const [category, setCategory] = useState<CategoryId>("js");
+  const [topicGroup, setTopicGroup] = useState<TopicGroup>("Вступ");
+  const [order, setOrder] = useState<number>(3);
   const [level, setLevel] = useState<Lesson["level"]>("Початковий");
   const [duration, setDuration] = useState("15 хв");
   const [summary, setSummary] = useState("");
@@ -29,8 +31,10 @@ export const AddLessonModal: React.FC<AddLessonModalProps> = ({ onClose, onAddLe
     const newLesson: Lesson = {
       id: `lesson-${Date.now()}`,
       slug: title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      title,
+      order: Number(order) || 1,
       category,
+      topicGroup,
+      title,
       level,
       duration,
       summary,
@@ -63,7 +67,7 @@ export const AddLessonModal: React.FC<AddLessonModalProps> = ({ onClose, onAddLe
             <input
               type="text"
               className="form-input"
-              placeholder="Наприклад: Урок 2: Асинхронність у JavaScript"
+              placeholder="Наприклад: JS №3: Асинхронність та Promises"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -72,11 +76,11 @@ export const AddLessonModal: React.FC<AddLessonModalProps> = ({ onClose, onAddLe
 
           <div className="form-row">
             <div className="form-group">
-              <label>Категорія *</label>
+              <label>Мова / Модуль *</label>
               <select
                 className="form-select"
                 value={category}
-                onChange={(e) => setCategory(e.target.value as Lesson["category"])}
+                onChange={(e) => setCategory(e.target.value as CategoryId)}
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat.id} value={cat.id}>
@@ -87,7 +91,35 @@ export const AddLessonModal: React.FC<AddLessonModalProps> = ({ onClose, onAddLe
             </div>
 
             <div className="form-group">
-              <label>Рівень *</label>
+              <label>Тематичний блок *</label>
+              <select
+                className="form-select"
+                value={topicGroup}
+                onChange={(e) => setTopicGroup(e.target.value as TopicGroup)}
+              >
+                {TOPIC_GROUPS.map((tg) => (
+                  <option key={tg} value={tg}>
+                    {tg}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Порядок уроку (#)</label>
+              <input
+                type="number"
+                min={1}
+                className="form-input"
+                value={order}
+                onChange={(e) => setOrder(Number(e.target.value))}
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Рівень складності *</label>
               <select
                 className="form-select"
                 value={level}
@@ -116,7 +148,7 @@ export const AddLessonModal: React.FC<AddLessonModalProps> = ({ onClose, onAddLe
             <textarea
               className="form-textarea"
               rows={2}
-              placeholder="Короткий анонс уроку..."
+              placeholder="Короткий анонс теми..."
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               required
@@ -128,7 +160,7 @@ export const AddLessonModal: React.FC<AddLessonModalProps> = ({ onClose, onAddLe
             <textarea
               className="form-textarea"
               rows={5}
-              placeholder="Основний навчальний матеріал (підтримує заголовки ### та списки)..."
+              placeholder="Основний матеріалу (підтримує ### заголовки, списки 1. та *)..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
               required
@@ -137,7 +169,7 @@ export const AddLessonModal: React.FC<AddLessonModalProps> = ({ onClose, onAddLe
 
           <div className="form-row">
             <div className="form-group">
-              <label>Мова коду (опціонально)</label>
+              <label>Мова підсвічування коду</label>
               <input
                 type="text"
                 className="form-input"
@@ -164,7 +196,7 @@ export const AddLessonModal: React.FC<AddLessonModalProps> = ({ onClose, onAddLe
               Скасувати
             </button>
             <button type="submit" className="btn btn-primary">
-              💾 Зберегти урок
+              💾 Зберегти новий урок
             </button>
           </div>
         </form>
@@ -188,7 +220,7 @@ export const AddLessonModal: React.FC<AddLessonModalProps> = ({ onClose, onAddLe
 
         .modal-content {
           width: 100%;
-          max-width: 650px;
+          max-width: 680px;
           max-height: 90vh;
           overflow-y: auto;
           padding: 2rem;

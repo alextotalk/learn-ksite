@@ -5,20 +5,33 @@ import { Lesson, CATEGORIES } from "@/data/courses";
 
 interface LessonModalProps {
   lesson: Lesson;
+  allLessons: Lesson[];
   isCompleted: boolean;
   onClose: () => void;
   onToggleComplete: (id: string) => void;
+  onSelectLesson: (lesson: Lesson) => void;
 }
 
 export const LessonModal: React.FC<LessonModalProps> = ({
   lesson,
+  allLessons,
   isCompleted,
   onClose,
   onToggleComplete,
+  onSelectLesson,
 }) => {
   const categoryInfo = CATEGORIES.find((c) => c.id === lesson.category) || CATEGORIES[0];
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Find previous and next lessons in the same category
+  const categoryLessons = allLessons
+    .filter((l) => l.category === lesson.category)
+    .sort((a, b) => a.order - b.order);
+
+  const currentIndex = categoryLessons.findIndex((l) => l.id === lesson.id);
+  const prevLesson = currentIndex > 0 ? categoryLessons[currentIndex - 1] : null;
+  const nextLesson = currentIndex < categoryLessons.length - 1 ? categoryLessons[currentIndex + 1] : null;
 
   const handleCopyCode = () => {
     if (lesson.codeExample) {
@@ -28,14 +41,22 @@ export const LessonModal: React.FC<LessonModalProps> = ({
     }
   };
 
+  const handleNavigate = (target: Lesson) => {
+    setSelectedOption(null);
+    onSelectLesson(target);
+  };
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content glass-panel" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal-header">
-          <div className="category-badge" style={{ backgroundColor: categoryInfo.badgeBg, color: categoryInfo.color }}>
-            <span>{categoryInfo.icon}</span>
-            <span>{categoryInfo.name}</span>
+          <div className="badge-group">
+            <div className="category-badge" style={{ backgroundColor: categoryInfo.badgeBg, color: categoryInfo.color }}>
+              <span>{categoryInfo.icon}</span>
+              <span>{categoryInfo.name}</span>
+            </div>
+            <span className="topic-tag">Модуль: {lesson.topicGroup}</span>
           </div>
 
           <button className="close-btn" onClick={onClose}>
@@ -46,6 +67,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
         {/* Title */}
         <h2 className="modal-title">{lesson.title}</h2>
         <div className="modal-meta">
+          <span>Порядок: <strong>#{lesson.order}</strong></span>
           <span>Рівень: <strong>{lesson.level}</strong></span>
           <span>Час читання: <strong>{lesson.duration}</strong></span>
         </div>
@@ -130,18 +152,30 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           </div>
         )}
 
-        {/* Modal Footer Actions */}
+        {/* Modal Footer Actions & Sequential Navigation */}
         <div className="modal-footer">
           <button
             className={`btn ${isCompleted ? "btn-secondary" : "btn-primary"}`}
             onClick={() => onToggleComplete(lesson.id)}
           >
-            {isCompleted ? "✓ Пройдено (Скасувати)" : "✅ Позначити урок як пройдений"}
+            {isCompleted ? "✓ Пройдено (Скасувати)" : "✅ Позначити як пройдено"}
           </button>
           
-          <button className="btn btn-secondary" onClick={onClose}>
-            Закрити
-          </button>
+          <div className="nav-buttons">
+            {prevLesson && (
+              <button className="btn btn-secondary" onClick={() => handleNavigate(prevLesson)}>
+                ← Попередній
+              </button>
+            )}
+            {nextLesson && (
+              <button className="btn btn-primary" onClick={() => handleNavigate(nextLesson)}>
+                Наступний →
+              </button>
+            )}
+            <button className="btn btn-secondary" onClick={onClose}>
+              Закрити
+            </button>
+          </div>
         </div>
       </div>
 
@@ -163,8 +197,8 @@ export const LessonModal: React.FC<LessonModalProps> = ({
 
         .modal-content {
           width: 100%;
-          max-width: 750px;
-          max-height: 85vh;
+          max-width: 780px;
+          max-height: 88vh;
           overflow-y: auto;
           padding: 2rem;
           display: flex;
@@ -180,6 +214,12 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           justify-content: space-between;
         }
 
+        .badge-group {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+        }
+
         .category-badge {
           display: inline-flex;
           align-items: center;
@@ -188,6 +228,14 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           border-radius: var(--radius-full);
           font-size: 0.85rem;
           font-weight: 700;
+        }
+
+        .topic-tag {
+          font-size: 0.8rem;
+          color: var(--text-muted);
+          background: rgba(255, 255, 255, 0.05);
+          padding: 0.25rem 0.65rem;
+          border-radius: var(--radius-sm);
         }
 
         .close-btn {
@@ -199,10 +247,6 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           border-radius: 50%;
           cursor: pointer;
           font-size: 1rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
         }
 
         .close-btn:hover {
@@ -328,12 +372,6 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           cursor: pointer;
           font-size: 0.9rem;
           text-align: left;
-          transition: all 0.2s ease;
-        }
-
-        .quiz-option-btn:hover {
-          background: rgba(255, 255, 255, 0.08);
-          color: var(--text-primary);
         }
 
         .quiz-option-btn.correct {
@@ -369,8 +407,16 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           display: flex;
           align-items: center;
           justify-content: space-between;
+          gap: 1rem;
           padding-top: 1rem;
           border-top: 1px solid rgba(255, 255, 255, 0.08);
+          flex-wrap: wrap;
+        }
+
+        .nav-buttons {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
       `}</style>
     </div>
