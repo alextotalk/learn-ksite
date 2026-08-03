@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { CATEGORIES } from "@/data/courses";
 
 interface NavbarProps {
@@ -16,19 +17,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectCategory,
   searchQuery,
   onSearchChange,
-  onOpenAddModal,
 }) => {
   return (
     <header className="sticky-header">
       <div className="container nav-content">
         {/* Brand Logo */}
-        <div className="brand" onClick={() => onSelectCategory("all")}>
+        <Link href="/" className="brand">
           <div className="logo-icon">✨</div>
           <div className="brand-text">
             <span className="brand-title">LearnHub</span>
             <span className="brand-subtitle">База знань & Уроки</span>
           </div>
-        </div>
+        </Link>
 
         {/* Search Bar */}
         <div className="search-wrapper">
@@ -47,12 +47,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Action Button */}
+        {/* Action Button -> Direct Page Link */}
         <div className="nav-actions">
-          <button className="btn btn-primary" onClick={onOpenAddModal}>
+          <Link href="/add-lesson" className="btn btn-primary">
             <span className="btn-icon">+</span>
             <span>Додати урок / статтю</span>
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -104,6 +104,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           gap: 0.75rem;
           cursor: pointer;
           user-select: none;
+          text-decoration: none;
         }
 
         .logo-icon {

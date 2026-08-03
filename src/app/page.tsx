@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { LessonCard } from "@/components/LessonCard";
-import { LessonModal } from "@/components/LessonModal";
-import { AddLessonModal } from "@/components/AddLessonModal";
-import { AdminAuthModal } from "@/components/AdminAuthModal";
 import { INITIAL_LESSONS, Lesson, CATEGORIES, TOPIC_GROUPS } from "@/data/courses";
-import { fetchCloudLessons, saveCloudLesson } from "@/lib/firebase";
+import { fetchCloudLessons } from "@/lib/firebase";
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -15,10 +13,6 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [lessons, setLessons] = useState<Lesson[]>(INITIAL_LESSONS);
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>([]);
-  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
-  
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
 
   // Load user data & cloud lessons
   useEffect(() => {
@@ -45,16 +39,6 @@ export default function HomePage() {
     }
   }, []);
 
-  // Admin Verification check before opening Add Lesson modal
-  const handleOpenAddClick = () => {
-    const isAuth = sessionStorage.getItem("ksite_admin_authenticated") === "true";
-    if (isAuth) {
-      setIsAddModalOpen(true);
-    } else {
-      setIsAdminAuthModalOpen(true);
-    }
-  };
-
   const handleToggleComplete = (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
 
@@ -67,19 +51,6 @@ export default function HomePage() {
 
     setCompletedLessonIds(updated);
     localStorage.setItem("ksite_completed_lessons", JSON.stringify(updated));
-  };
-
-  const handleAddLesson = (newLesson: Lesson) => {
-    const updatedLessons = [newLesson, ...lessons];
-    setLessons(updatedLessons);
-
-    // Save to Firestore & local storage
-    saveCloudLesson(newLesson);
-
-    const customOnly = updatedLessons.filter(
-      (l) => !INITIAL_LESSONS.some((init) => init.id === l.id)
-    );
-    localStorage.setItem("ksite_custom_lessons", JSON.stringify(customOnly));
   };
 
   // Filter and sort lessons
@@ -116,14 +87,14 @@ export default function HomePage() {
         onSelectCategory={setActiveCategory}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        onOpenAddModal={handleOpenAddClick}
+        onOpenAddModal={() => {}}
       />
 
       <div className="container main-content">
         {/* Hero Section */}
         <section className="hero-section glass-panel">
           <div className="hero-badge">
-            <span>🚀 Інтерактивна База Знань з Обговоренням</span>
+            <span>🚀 Інтерактивна База Знань та Курси</span>
           </div>
           <h1 className="hero-title">
             Структуровані <span className="gradient-text">Курси та Уроки</span> з Програмування
@@ -192,7 +163,6 @@ export default function HomePage() {
                 key={lesson.id}
                 lesson={lesson}
                 isCompleted={completedLessonIds.includes(lesson.id)}
-                onSelect={setSelectedLesson}
                 onToggleComplete={handleToggleComplete}
               />
             ))}
@@ -202,43 +172,12 @@ export default function HomePage() {
             <div className="empty-icon">🔍</div>
             <h3>Уроків у даному розділі не знайдено</h3>
             <p>Спробуйте обрати інший модуль або додайте новий урок!</p>
-            <button className="btn btn-primary" onClick={handleOpenAddClick}>
+            <Link href="/add-lesson" className="btn btn-primary">
               + Додати новий урок
-            </button>
+            </Link>
           </div>
         )}
       </div>
-
-      {/* Lesson View Modal */}
-      {selectedLesson && (
-        <LessonModal
-          lesson={selectedLesson}
-          allLessons={lessons}
-          isCompleted={completedLessonIds.includes(selectedLesson.id)}
-          onClose={() => setSelectedLesson(null)}
-          onToggleComplete={(id) => handleToggleComplete(id)}
-          onSelectLesson={setSelectedLesson}
-        />
-      )}
-
-      {/* Admin Passcode Auth Modal */}
-      {isAdminAuthModalOpen && (
-        <AdminAuthModal
-          onClose={() => setIsAdminAuthModalOpen(false)}
-          onSuccess={() => {
-            setIsAdminAuthModalOpen(false);
-            setIsAddModalOpen(true);
-          }}
-        />
-      )}
-
-      {/* Add Lesson Modal (Admin Only) */}
-      {isAddModalOpen && (
-        <AddLessonModal
-          onClose={() => setIsAddModalOpen(false)}
-          onAddLesson={handleAddLesson}
-        />
-      )}
 
       <style jsx>{`
         .main-wrapper {
