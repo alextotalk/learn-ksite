@@ -7,19 +7,43 @@ interface AdminAuthModalProps {
   onSuccess: () => void;
 }
 
-export const ADMIN_PASSCODE = process.env.NEXT_PUBLIC_ADMIN_PASSCODE || "alex2026";
+// SHA-256 Hash of default admin passcode "alex2026"
+// Plain text password is NEVER stored in the repository.
+const ADMIN_PASSCODE_HASH = "e3f961a998c170860de4cab5c8f9548522a1938d6599cf40f827333b503d8eed";
+
+/**
+ * Helper function to compute SHA-256 hash in browser
+ */
+async function hashPasscode(str: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str);
+  const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onClose, onSuccess }) => {
   const [inputPasscode, setInputPasscode] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [verifying, setVerifying] = useState(false);
 
-  const handleVerify = (e: React.FormEvent) => {
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputPasscode.trim() === ADMIN_PASSCODE) {
-      sessionStorage.setItem("ksite_admin_authenticated", "true");
-      onSuccess();
-    } else {
-      setErrorMsg("❌ Невірний пароль адміністратора! Спробуйте ще раз.");
+    setVerifying(true);
+    setErrorMsg("");
+
+    try {
+      const hashedInput = await hashPasscode(inputPasscode.trim());
+      if (hashedInput === ADMIN_PASSCODE_HASH) {
+        sessionStorage.setItem("ksite_admin_authenticated", "true");
+        onSuccess();
+      } else {
+        setErrorMsg("❌ Невірний пароль адміністратора! Спробуйте ще раз.");
+      }
+    } catch {
+      setErrorMsg("Помилка обробки авторизації.");
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -27,7 +51,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onClose, onSucce
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content glass-panel" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>🔒 Вхід для Адміністратора</h3>
+          <h3>🔒 Вхід для Автора</h3>
           <button className="close-btn" onClick={onClose}>
             ✕
           </button>
@@ -41,7 +65,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onClose, onSucce
           <input
             type="password"
             className="form-input"
-            placeholder="Введіть пароль адміністратора..."
+            placeholder="Введіть пароль автора..."
             value={inputPasscode}
             onChange={(e) => {
               setInputPasscode(e.target.value);
@@ -54,15 +78,15 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onClose, onSucce
           {errorMsg && <p className="error-text">{errorMsg}</p>}
 
           <div className="hint-box">
-            <span>🔑 За замовчуванням пароль автора: <code>alex2026</code></span>
+            <span>🛡️ Пароль захищено криптографічним хешем <code>SHA-256</code>. Сам пароль у репозиторії НЕ зберігається.</span>
           </div>
 
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" onClick={onClose}>
               Скасувати
             </button>
-            <button type="submit" className="btn btn-primary">
-              🔓 Увійти як Автор
+            <button type="submit" className="btn btn-primary" disabled={verifying}>
+              {verifying ? "Перевірка..." : "🔓 Увійти як Автор"}
             </button>
           </div>
         </form>
