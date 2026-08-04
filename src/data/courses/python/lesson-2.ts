@@ -9,7 +9,7 @@ export const pythonLesson2: Lesson = {
   title: "Python №2: Типи даних, Мутабельність (Mutable vs Immutable) та Управління Пам'яттю",
   level: "Початковий",
   duration: "25 хв",
-  summary: "Фундаментальний гайд по типуванню у Python: CPython пам'ять, id(), незмінювані (Immutable) проти змінюваних (Mutable) типів, списки, кортежі, словники та множини.",
+  summary: "Фундаментальний гайд по типуванню у Python: CPython пам'ять, id(), приклади для кожного змінюваного (Mutable) та незмінюваного (Immutable) типу даних.",
   content: `У Python **все є об'єктом** (Everything is an Object) — від простих чисел до функцій та класів. Розуміння того, як Python обробляє об'єкти в пам'яті, є ключем до написання безпечного та високоефективного коду.
 
 ---
@@ -18,7 +18,7 @@ export const pythonLesson2: Lesson = {
 
 Коли ви створюєте змінну у Python (наприклад, \`x = 100\`), ви не створюєте комірку пам'яті зі значенням, а створюєте **об'єкт у пам'яті (Heap)** та зв'язуєте з ним ім'я-змінну (ярлик).
 
-* **\`id(object)\`**: Вбудована функція, яка повертає унікальний цілочисельний ідентифікатор об'єкта. У стандартному інтерпретаторі CPython це безпосередньо **адреса об'єкта в оперативній пам'яті**.
+* **\`id(object)\`**: Вбудована функція, яка повертає унікальний цілочисельний ідентифікатор об'єкта. У CPython це безпосередньо **адреса об'єкта в оперативній пам'яті**.
 * **\`type(object)\`**: Повертає тип об'єкта.
 
 \`\`\`python
@@ -30,36 +30,114 @@ print(id(a) == id(b)) # True
 
 ---
 
-### 🔄 2. Мутабельність (Mutable vs Immutable)
+### 🔄 2. Мутабельність (Mutable vs Immutable) з прикладами для кожного типу
 
 Мутабельність — це здатність об'єкта змінювати свій внутрішній стан (значення) після створення у пам'яті без зміни власної адреси (\`id\`).
+
+---
 
 #### 🔒 Незмінювані типи (Immutable)
 Після створення значення об'єкта в пам'яті змінити неможливо. Будь-яка "зміна" створює **новий об'єкт** з іншим \`id\`.
 
-* **Типи**: \`int\`, \`float\`, \`complex\`, \`bool\`, \`str\`, \`tuple\`, \`frozenset\`, \`bytes\`.
-
+1. **\`int\` (ціле число)**:
 \`\`\`python
-# Приклад з числом
 num = 10
 old_id = id(num)
-
-num += 1 # Створюється новий об'єкт '11' у пам'яті
+num += 1 # створює новий int об'єкт 11
 print(old_id == id(num)) # False!
 \`\`\`
+
+2. **\`float\` (дійсне число)**:
+\`\`\`python
+price = 19.99
+old_id = id(price)
+price += 0.01 # новий float об'єкт
+print(old_id == id(price)) # False!
+\`\`\`
+
+3. **\`complex\` (комплексне число)**:
+\`\`\`python
+z = 2 + 3j
+old_id = id(z)
+z += 1j # новий complex об'єкт
+print(old_id == id(z)) # False!
+\`\`\`
+
+4. **\`bool\` (логічний тип)**:
+\`\`\`python
+is_active = True
+old_id = id(is_active)
+is_active = not is_active # посилання на об'єкт False
+print(old_id == id(is_active)) # False!
+\`\`\`
+
+5. **\`str\` (рядок)**:
+\`\`\`python
+text = "Hello"
+old_id = id(text)
+text += " World" # новий str об'єкт
+print(old_id == id(text)) # False!
+\`\`\`
+
+6. **\`tuple\` (кортеж)**:
+\`\`\`python
+coords = (50.45, 30.52)
+old_id = id(coords)
+coords += (100.0,) # конкатенація створює новий tuple
+print(old_id == id(coords)) # False!
+\`\`\`
+
+7. **\`frozenset\` (незмінювана множина)**:
+\`\`\`python
+fs = frozenset([1, 2, 3])
+old_id = id(fs)
+fs = fs.union([4]) # union повертає новий frozenset
+print(old_id == id(fs)) # False!
+\`\`\`
+
+8. **\`bytes\` (байтовий рядок)**:
+\`\`\`python
+b_data = b"Hello"
+old_id = id(b_data)
+b_data += b" World" # новий bytes об'єкт
+print(old_id == id(b_data)) # False!
+\`\`\`
+
+---
 
 #### 🔓 Змінювані типи (Mutable)
 Вміст об'єкта можна модифікувати (додавати, видаляти або замінювати елементи) "на місці" (in-place) без зміни його \`id\`.
 
-* **Типи**: \`list\`, \`dict\`, \`set\`, \`bytearray\`.
-
+1. **\`list\` (список)**:
 \`\`\`python
-# Приклад зі списком
 numbers = [1, 2]
 old_id = id(numbers)
+numbers.append(3) # модифікація на місці
+print(old_id == id(numbers)) # True! (Адреса пам'яті не змінилася)
+\`\`\`
 
-numbers.append(3) # Модифікація на місці
-print(old_id == id(numbers)) # True! Адреса пам'яті не змінилася
+2. **\`dict\` (словник)**:
+\`\`\`python
+user = {"name": "Олексій"}
+old_id = id(user)
+user["role"] = "admin" # додавання ключа на місці
+print(old_id == id(user)) # True!
+\`\`\`
+
+3. **\`set\` (множина)**:
+\`\`\`python
+tags = {"python", "fastapi"}
+old_id = id(tags)
+tags.add("postgres") # додавання елемента на місці
+print(old_id == id(tags)) # True!
+\`\`\`
+
+4. **\`bytearray\` (змінюваний байтовий масив)**:
+\`\`\`python
+ba = bytearray(b"hello")
+old_id = id(ba)
+ba[0] = ord('H') # зміна першого байта на місці
+print(old_id == id(ba)) # True!
 \`\`\`
 
 ---
@@ -101,7 +179,6 @@ user_ids.append(104)
 print(f"Адреса пам'яті до та після append(): {initial_memory_address == id(user_ids)}") # True
 
 # 2. Immutable tuple як ключ для словника
-# Слот координати (широта, довгота) як ключ dict
 locations: Dict[Tuple[float, float], str] = {
     (50.4501, 30.5234): "Київ (Центр)",
     (49.8397, 24.0297): "Львів (Площа Ринок)",
