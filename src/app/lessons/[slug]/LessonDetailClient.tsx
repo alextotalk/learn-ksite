@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Lesson, CATEGORIES } from "@/data/courses";
 import { CommentsSection } from "@/components/CommentsSection";
 import { Navbar } from "@/components/Navbar";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 interface LessonDetailClientProps {
   initialLesson: Lesson;
@@ -126,24 +127,7 @@ export const LessonDetailClient: React.FC<LessonDetailClientProps> = ({
             </button>
           </div>
 
-          <div className="markdown-body">
-            {lesson.content.split("\n\n").map((paragraph, idx) => {
-              if (paragraph.startsWith("### ")) {
-                return <h3 key={idx} className="content-h3">{paragraph.replace("### ", "")}</h3>;
-              }
-              if (paragraph.startsWith("1. ") || paragraph.startsWith("* ")) {
-                const items = paragraph.split("\n");
-                return (
-                  <ul key={idx} className="content-list">
-                    {items.map((it, i) => (
-                      <li key={i}>{it.replace(/^(\d+\. |\* )/, "")}</li>
-                    ))}
-                  </ul>
-                );
-              }
-              return <p key={idx} className="content-p">{paragraph}</p>;
-            })}
-          </div>
+          <MarkdownRenderer content={lesson.content} />
 
           {/* Code Example Section */}
           {lesson.codeExample && (
